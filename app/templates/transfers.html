@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}타계정대체 · 재고수불 관리{% endblock %}
+{% block content %}
+{% set heading = "타계정대체" %}
+{% include "_entry_head.html" %}
+
+<div class="panel">
+  <p class="muted" style="margin-top:0">샘플·홍보물처럼 판매가 아닌 용도로 쓴 재고입니다. 금액은 분기 결산 때 평균단가로 계산됩니다.</p>
+  <form method="post" action="/transfers" class="row">
+    <label>대체일자 <input type="date" name="date" value="{{ today }}" required></label>
+    <label>품목코드 <input name="item_code" list="item-codes" class="wide" required></label>
+    <label>보관처
+      <select name="location_id">{% for l in locations %}<option value="{{ l.id }}">{{ l.name }}</option>{% endfor %}</select>
+    </label>
+    <label>수량 <input type="number" name="qty" class="num" min="1" required></label>
+    <label>대체 계정 <input name="account" list="accounts" value="광고선전비" required></label>
+    <label>내용 <input name="note" placeholder="예: 전시회 샘플"></label>
+    <button>등록</button>
+  </form>
+  <datalist id="accounts">{% for a in accounts %}<option value="{{ a }}">{% endfor %}</datalist>
+</div>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>대체일자</th><th>품목코드</th><th>품목명</th><th>보관처</th><th class="r">수량</th><th>계정</th><th>내용</th><th>등록</th><th></th></tr></thead>
+  <tbody>
+  {% for e in rows %}
+  <tr>
+    <td>{{ e.date }}</td><td>{{ e.item_code }}</td><td class="name">{{ e.item.name }}</td><td>{{ e.location.name }}</td>
+    <td class="r">{{ e.qty|n }}</td><td>{{ e.account }}</td><td>{{ e.note }}</td><td class="muted">{{ e.created_by }}</td>
+    <td>{% if not period.closed %}<form method="post" action="/transfers/{{ e.id }}/delete" onsubmit="return confirm('삭제할까요?')"><button class="small danger">삭제</button></form>{% endif %}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="9" class="muted">이 기간의 타계정대체 내역이 없습니다.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

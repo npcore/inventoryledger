@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ period.name }} 재고실사 · 재고수불 관리{% endblock %}
+{% block content %}
+{% include "_period_tabs.html" %}
+
+<div class="panel">
+  <p style="margin:0">보관처별 실사 수량을 입력하세요. <b>빈칸은 미입력</b>, 재고가 없으면 <b>0</b>을 입력합니다.
+  회색 숫자는 직전 실사 + 입고 − 대체 ± 이동으로 구한 예상수량입니다. 출고는 반영되지 않은 값이니 참고만 하세요.</p>
+</div>
+
+<form method="post" action="/periods/{{ period.id }}/count" id="count-form">
+<div class="table-wrap">
+<table>
+  <thead><tr>
+    <th>품목코드</th><th>품목명</th><th class="r">기초</th><th class="r">입고</th><th class="r">대체</th><th class="r">장부 가용</th>
+    {% for l in locations %}<th class="r">{{ l.name }}</th>{% endfor %}
+    <th class="r">실사 합계</th><th class="r">출고 (역산)</th>
+  </tr></thead>
+  <tbody>
+  {% for r in rows %}
+  {% set avail = r.open_qty + r.in_qty - r.xfer_qty %}
+  <tr data-avail="{{ avail }}">
+    <td>{{ r.code }}</td><td class="name">{{ r.name }}</td>
+    <td class="r">{{ r.open_qty|n }}</td><td class="r">{{ r.in_qty|n }}</td><td class="r">{{ r.xfer_qty|n }}</td><td class="r"><b>{{ avail|n }}</b></td>
+    {% for l in locations %}
+    {% set v = counts.get((r.code, l.id)) %}
+    <td class="r">
+      <input class="num cnt" name="c__{{ r.code }}__{{ l.id }}" inputmode="numeric" value="{{ v if v is not none }}" {{ 'disabled' if period.closed }}>
+      <span class="expected">{{ expected.get((r.code, l.id), 0)|n }}</span>
+    </td>
+    {% endfor %}
+    <td class="r sum">{{ r.count_qty|n }}</td><td class="r out">{{ (avail - r.count_qty)|n }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="{{ 8 + locations|length }}" class="muted">기초재고나 입고가 있는 품목이 없습니다.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% if not period.closed %}<p><button>실사 저장</button></p>{% endif %}
+</form>
+
+<script>
+// 입력하는 대로 실사 합계와 역산 출고를 다시 계산
+document.querySelectorAll('#count-form tbody tr[data-avail]').forEach(tr => {
+  const update = () => {
+    let sum = 0;
+    tr.querySelectorAll('input.cnt').forEach(i => { sum += parseInt(i.value.replace(/,/g, '')) || 0; });
+    const out = parseInt(tr.dataset.avail) - sum;
+    tr.querySelector('.sum').textContent = sum.toLocaleString();
+    const o = tr.querySelector('.out');
+    o.textContent = out.toLocaleString();
+    o.classList.toggle('neg', out < 0);
+  };
+  tr.querySelectorAll('input.cnt').forEach(i => i.addEventListener('input', update));
+});
+</script>
+{% endblock %}

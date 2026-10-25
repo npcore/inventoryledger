@@ -1,0 +1,17 @@
+<div class="spread">
+  <div>
+    <h1>{{ period.name }} <span class="badge {{ 'closed' if period.closed else 'open' }}">{{ '마감' if period.closed else '진행 중' }}</span></h1>
+    <p class="sub">{{ period.start_date }} ~ {{ period.end_date }}{% if period.closed_by %} · {{ period.closed_at.strftime('%Y-%m-%d %H:%M') }} {{ period.closed_by }} 마감{% endif %}</p>
+  </div>
+  <a class="btn ghost" href="/periods/{{ period.id }}/export.xlsx">엑셀 다운로드</a>
+</div>
+{% set path = request.url.path %}
+<div class="tabs">
+  <a href="/periods/{{ period.id }}" class="{{ 'on' if path == '/periods/%d'|format(period.id) }}">수불부</a>
+  {% if not period.legacy %}
+  <a href="/periods/{{ period.id }}/count" class="{{ 'on' if path.endswith('/count') }}">재고실사</a>
+  <a href="/periods/{{ period.id }}/reconcile" class="{{ 'on' if path.endswith('/reconcile') }}">입고장·분개장 대사</a>
+  {% endif %}
+  <a href="/receipts?period_id={{ period.id }}">입고장 →</a>
+  <a href="/transfers?period_id={{ period.id }}">타계정대체 →</a>
+</div>

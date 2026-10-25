@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}품목 · 재고수불 관리{% endblock %}
+{% block content %}
+<h1>품목</h1>
+<p class="sub">품목명은 기존 코드표처럼 <code>분류 : 명칭</code> 형식을 권장합니다 (예: <code>RAM : DDR4 32GB REG ECC</code>).</p>
+
+<div class="panel">
+  <form method="post" action="/items" class="row">
+    <label>품목코드 <input name="code" value="{{ next_code }}" style="width:110px" required></label>
+    <label>품목명 <input name="name" class="wide" required></label>
+    <label>비고 <input name="note"></label>
+    <button>추가</button>
+  </form>
+</div>
+
+<form method="get" class="row" style="margin-bottom:12px">
+  <input name="q" value="{{ q }}" placeholder="코드·품목명 검색" class="wide">
+  <label class="check"><input type="checkbox" name="show" value="all" {{ 'checked' if show == 'all' }}> 사용 안 함 포함</label>
+  <button class="ghost">검색</button>
+</form>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>품목코드</th><th>품목명</th><th>비고</th><th>사용</th><th></th></tr></thead>
+  <tbody>
+  {% for i in items %}
+  <tr>
+    {% set f = 'item-' ~ loop.index %}
+    <td>{{ i.code }}</td>
+    <td><input form="{{ f }}" name="name" value="{{ i.name }}" class="wide" required></td>
+    <td><input form="{{ f }}" name="note" value="{{ i.note }}"></td>
+    <td><input form="{{ f }}" type="checkbox" name="active" value="true" {{ 'checked' if i.active }}></td>
+    <td><form id="{{ f }}" method="post" action="/items/{{ i.code }}"><button class="small ghost">저장</button></form></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5" class="muted">품목이 없습니다.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

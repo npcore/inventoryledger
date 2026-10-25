@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}재고수불 관리{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+{% if user %}
+<header class="top">
+  <a class="brand" href="/">재고수불 관리</a>
+  {% set path = request.url.path %}
+  <nav>
+    <a href="/" class="{{ 'on' if path == '/' }}">현황</a>
+    <a href="/receipts" class="{{ 'on' if path.startswith('/receipts') }}">입고</a>
+    <a href="/transfers" class="{{ 'on' if path.startswith('/transfers') }}">타계정대체</a>
+    <a href="/moves" class="{{ 'on' if path.startswith('/moves') }}">보관처 이동</a>
+    <a href="/periods" class="{{ 'on' if path.startswith('/periods') }}">결산 (실사·수불부)</a>
+    <a href="/items" class="{{ 'on' if path.startswith('/items') }}">품목</a>
+    {% if user.is_admin %}<a href="/users" class="{{ 'on' if path.startswith('/users') }}">사용자</a>{% endif %}
+  </nav>
+  <div class="who">
+    <a href="/me">{{ user.name }}</a>
+    <form method="post" action="/logout"><button class="small ghost">로그아웃</button></form>
+  </div>
+</header>
+{% endif %}
+<main>
+  {% for f in flashes %}<div class="flash {{ f.kind }}">{{ f.message }}</div>{% endfor %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

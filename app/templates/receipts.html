@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}입고 · 재고수불 관리{% endblock %}
+{% block content %}
+{% set heading = "입고" %}
+{% include "_entry_head.html" %}
+
+<div class="panel">
+  <form method="post" action="/receipts" class="row">
+    <label>입고일자 <input type="date" name="date" value="{{ today }}" required></label>
+    <label>품목코드 <input name="item_code" list="item-codes" class="wide" placeholder="NP-0032 또는 품명 검색" required></label>
+    <label>보관처
+      <select name="location_id">{% for l in locations %}<option value="{{ l.id }}">{{ l.name }}</option>{% endfor %}</select>
+    </label>
+    <label>수량 <input type="number" name="qty" class="num" min="1" required></label>
+    <label>입고금액 (원, 공급가) <input type="number" name="amount" min="0" style="width:140px" required></label>
+    <label>거래처 <input name="vendor"></label>
+    <label>전표번호 <input name="voucher_no" style="width:90px"></label>
+    <label>비고 <input name="note"></label>
+    <button>등록</button>
+  </form>
+</div>
+
+<details class="panel">
+  <summary>엑셀로 한꺼번에 등록</summary>
+  <p class="muted">기존 <b>입고장</b> 시트 양식 그대로 올리면 됩니다. 필수 열: 입고일자, 품목코드, 입고수량, 입고금액 /
+     선택 열: 보관처(없으면 {{ locations[0].name }}), 거래처, 전표번호, 비고. 한 줄이라도 오류가 있으면 아무것도 저장되지 않습니다.</p>
+  <form method="post" action="/receipts/import" enctype="multipart/form-data" class="row">
+    <input type="file" name="file" accept=".xls,.xlsx" required>
+    <button>가져오기</button>
+  </form>
+</details>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>입고일자</th><th>품목코드</th><th>품목명</th><th>보관처</th><th class="r">수량</th><th class="r">단가</th><th class="r">입고금액</th><th>거래처</th><th>전표번호</th><th>비고</th><th>등록</th><th></th></tr></thead>
+  <tbody>
+  {% for e in rows %}
+  <tr>
+    <td>{{ e.date }}</td><td>{{ e.item_code }}</td><td class="name">{{ e.item.name }}</td><td>{{ e.location.name }}</td>
+    <td class="r">{{ e.qty|n }}</td><td class="r">{{ (e.amount / e.qty)|unit }}</td><td class="r">{{ e.amount|n }}</td>
+    <td>{{ e.vendor }}</td><td>{{ e.voucher_no }}</td><td>{{ e.note }}</td><td class="muted">{{ e.created_by }}</td>
+    <td>{% if not period.closed %}<form method="post" action="/receipts/{{ e.id }}/delete" onsubmit="return confirm('삭제할까요?')"><button class="small danger">삭제</button></form>{% endif %}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="12" class="muted">이 기간의 입고 내역이 없습니다.</td></tr>
+  {% endfor %}
+  {% if rows %}
+  <tr class="total"><td colspan="4">합계 {{ rows|length }}건</td><td class="r">{{ rows|sum(attribute='qty')|n }}</td><td></td><td class="r">{{ rows|sum(attribute='amount')|n }}</td><td colspan="5"></td></tr>
+  {% endif %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

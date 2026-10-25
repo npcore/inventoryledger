@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ period.name }} 대사 · 재고수불 관리{% endblock %}
+{% block content %}
+{% include "_period_tabs.html" %}
+
+<div class="panel">
+  <p style="margin-top:0">회계 프로그램에서 받은 <b>분개장</b> 엑셀을 올리면 원재료(153) 계정 금액과 입고장을 일자별로 비교합니다. 다시 올리면 기존 분개장은 바뀝니다.
+  <span class="muted">필수 열: 전표일자, 차변, 대변 / 선택: 전표번호, 구분, Code, 계정과목, 거래처, 적요</span></p>
+  <form method="post" action="/periods/{{ period.id }}/journal" enctype="multipart/form-data" class="row">
+    <input type="file" name="file" accept=".xls,.xlsx" required>
+    <button>분개장 올리기</button>
+  </form>
+</div>
+
+<div class="cards">
+  <div class="card"><div class="label">입고장 합계</div><div class="value">{{ receipt_total|n }}</div></div>
+  <div class="card"><div class="label">분개장 원재료 합계</div><div class="value">{{ journal_total|n }}</div></div>
+  <div class="card"><div class="label">차이</div><div class="value {{ 'neg' if receipt_total != journal_total }}">{{ (receipt_total - journal_total)|n }}</div>
+    <div class="hint">{{ '일치' if receipt_total == journal_total else '확인 필요' }}</div></div>
+</div>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>일자</th><th class="r">입고장</th><th class="r">분개장</th><th class="r">차이</th><th>입고 내역</th><th>분개 내역</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+  <tr class="{{ 'has-error' if r.diff }}">
+    <td>{{ r.date }}</td><td class="r">{{ r.receipt_amount|n }}</td><td class="r">{{ r.journal_amount|n }}</td><td class="r {{ 'neg' if r.diff }}">{{ r.diff|n }}</td>
+    <td class="name muted">{% for e in r.receipts %}{{ e.item_code }} {{ e.qty|n }}개 {{ e.amount|n }}<br>{% endfor %}</td>
+    <td class="name muted">{% for j in r.journals %}{{ j.voucher_no }} {{ j.vendor }} {{ (j.debit - j.credit)|n }} {{ j.memo }}<br>{% endfor %}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="6" class="muted">입고 또는 분개 내역이 없습니다.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

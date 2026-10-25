@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}로그인 · 재고수불 관리{% endblock %}
+{% block content %}
+<div class="panel login">
+  <h1>재고수불 관리</h1>
+  <p class="sub">로그인하세요.</p>
+  <form method="post" action="/login">
+    <label>아이디 <input name="username" required autofocus></label>
+    <label>비밀번호 <input name="password" type="password" required></label>
+    <button>로그인</button>
+  </form>
+</div>
+{% endblock %}

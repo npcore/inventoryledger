@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}사용자 · 재고수불 관리{% endblock %}
+{% block content %}
+<h1>사용자</h1>
+<p class="sub">관리자는 기준 파일 가져오기, 마감 취소, 사용자 관리를 할 수 있습니다.</p>
+
+<div class="panel">
+  <form method="post" action="/users" class="row">
+    <label>아이디 <input name="username" required></label>
+    <label>이름 <input name="name" required></label>
+    <label>비밀번호 (8자 이상) <input name="password" type="password" minlength="8" required></label>
+    <label class="check"><input type="checkbox" name="is_admin" value="true"> 관리자</label>
+    <button>추가</button>
+  </form>
+</div>
+
+<table class="panel" style="padding:0">
+  <thead><tr><th>아이디</th><th>이름</th><th>새 비밀번호</th><th>관리자</th><th>사용</th><th></th></tr></thead>
+  <tbody>
+  {% for u in users %}
+  <tr>
+    {% set f = 'user-' ~ u.id %}
+    <td>{{ u.username }}</td><td>{{ u.name }}</td>
+    <td><input form="{{ f }}" name="password" type="password" minlength="8" placeholder="변경 시에만 입력"></td>
+    <td><input form="{{ f }}" type="checkbox" name="is_admin" value="true" {{ 'checked' if u.is_admin }}></td>
+    <td><input form="{{ f }}" type="checkbox" name="active" value="true" {{ 'checked' if u.active }}></td>
+    <td><form id="{{ f }}" method="post" action="/users/{{ u.id }}"><button class="small ghost">저장</button></form></td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

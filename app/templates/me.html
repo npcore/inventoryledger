@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}내 정보 · 재고수불 관리{% endblock %}
+{% block content %}
+<div class="panel login">
+  <h1>비밀번호 변경</h1>
+  <p class="sub">{{ user.name }} ({{ user.username }})</p>
+  <form method="post" action="/me">
+    <label>현재 비밀번호 <input name="current" type="password" required></label>
+    <label>새 비밀번호 (8자 이상) <input name="password" type="password" minlength="8" required></label>
+    <button>변경</button>
+  </form>
+</div>
+{% endblock %}

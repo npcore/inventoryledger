@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}처음 설정 · 재고수불 관리{% endblock %}
+{% block content %}
+<div class="panel login">
+  <h1>처음 설정</h1>
+  <p class="sub">관리자 계정을 만드세요.</p>
+  <form method="post" action="/setup">
+    <label>아이디 <input name="username" required autofocus></label>
+    <label>이름 <input name="name" required></label>
+    <label>비밀번호 (8자 이상) <input name="password" type="password" minlength="8" required></label>
+    <button>만들기</button>
+  </form>
+</div>
+{% endblock %}

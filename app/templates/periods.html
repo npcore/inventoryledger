@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}결산 기간 · 재고수불 관리{% endblock %}
+{% block content %}
+<div class="spread">
+  <div>
+    <h1>결산 기간</h1>
+    <p class="sub">분기마다 실사를 입력하고 마감하면 기말재고가 다음 분기 기초재고로 넘어갑니다.</p>
+  </div>
+  {% if periods %}<form method="post" action="/periods/next"><button>다음 분기 만들기</button></form>{% endif %}
+</div>
+
+{% if not periods %}
+<div class="panel">
+  <h2 style="margin-top:0">기존 엑셀 결산 파일 가져오기 (처음 한 번)</h2>
+  <p>기존 <b>재고수불 결산파일(.xls)</b>을 올리면 가장 최근 <code>수불부(YYYY.MM)</code> 시트를 기준으로 다음 항목을 가져옵니다.</p>
+  <ul>
+    <li>원재료 코드표의 품목</li>
+    <li>기말재고(수량, 단가, 금액). 다음 분기의 기초재고가 됩니다</li>
+    <li>재고실사의 보관처별 수량(본사, 용인, 성남)</li>
+    <li>해당 기간의 입고장, 타계정대체, 분개장(조회용)</li>
+  </ul>
+  {% if user.is_admin %}
+  <form method="post" action="/periods/import-legacy" enctype="multipart/form-data" class="row">
+    <input type="file" name="file" accept=".xls,.xlsx" required>
+    <button>가져오기</button>
+  </form>
+  {% else %}<p class="muted">관리자만 가져올 수 있습니다.</p>{% endif %}
+</div>
+{% else %}
+<table class="panel" style="padding:0">
+  <thead><tr><th>기간</th><th>시작</th><th>종료</th><th>상태</th><th>마감</th><th></th></tr></thead>
+  <tbody>
+  {% for p in periods %}
+  <tr>
+    <td><a href="/periods/{{ p.id }}"><b>{{ p.name }}</b></a></td><td>{{ p.start_date }}</td><td>{{ p.end_date }}</td>
+    <td><span class="badge {{ 'closed' if p.closed else 'open' }}">{{ '마감' if p.closed else '진행 중' }}</span>{% if p.legacy %} <span class="muted">엑셀 이관</span>{% endif %}</td>
+    <td class="muted">{% if p.closed_at %}{{ p.closed_at.strftime('%Y-%m-%d %H:%M') }} {{ p.closed_by }}{% endif %}</td>
+    <td>
+      <a href="/periods/{{ p.id }}">수불부</a>{% if not p.legacy %} · <a href="/periods/{{ p.id }}/count">실사</a> · <a href="/periods/{{ p.id }}/reconcile">대사</a>{% endif %}
+      · <a href="/periods/{{ p.id }}/export.xlsx">엑셀</a>
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

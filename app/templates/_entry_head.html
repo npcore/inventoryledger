@@ -1,0 +1,18 @@
+{# 입고·대체·이동 화면 공통 머리: 제목 + 기간 선택 + 품목 datalist #}
+<div class="spread">
+  <div>
+    <h1>{{ heading }}</h1>
+    <p class="sub">{{ period.name }} · {{ period.start_date }} ~ {{ period.end_date }}
+      {% if period.closed %}<span class="badge closed">마감됨 — 수정 불가</span>{% endif %}</p>
+  </div>
+  <form method="get" class="row">
+    <label>기간
+      <select name="period_id" onchange="this.form.submit()">
+        {% for p in periods %}<option value="{{ p.id }}" {{ 'selected' if p.id == period.id }}>{{ p.name }}</option>{% endfor %}
+      </select>
+    </label>
+  </form>
+</div>
+<datalist id="item-codes">
+  {% for i in items %}<option value="{{ i.code }}">{{ i.name }}</option>{% endfor %}
+</datalist>

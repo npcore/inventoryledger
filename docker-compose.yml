@@ -1,0 +1,37 @@
+services:
+  app:
+    build: .
+    image: inventoryledger:latest
+    container_name: inventoryledger
+    restart: unless-stopped
+    ports:
+      # 사내망 접속용 (공유기에서는 이 포트를 열지 않는다)
+      - "8000:8000"
+    volumes:
+      # DB(inventory.db)와 세션 키(secret.key)가 저장되는 폴더. 이 폴더가 곧 모든 데이터다.
+      - ./data:/data
+    environment:
+      TZ: Asia/Seoul
+
+  # 외부 접속용 HTTPS. 인증서(Let's Encrypt)를 자동으로 받고 갱신한다.
+  # 공유기에서 80, 443 포트를 이 서버로 포워딩해야 한다.
+  caddy:
+    image: caddy:2.10
+    container_name: inventoryledger-caddy
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      # 외부 접속 주소. 서버의 .env 파일에서 SITE_ADDRESS=... 로 지정한다.
+      SITE_ADDRESS: ${SITE_ADDRESS:-localhost}
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}보관처 이동 · 재고수불 관리{% endblock %}
+{% block content %}
+{% set heading = "보관처 이동" %}
+{% include "_entry_head.html" %}
+
+<div class="panel">
+  <p class="muted" style="margin-top:0">본사·용인·성남 사이 이동 기록입니다. 금액에는 영향이 없고, 실사 화면의 보관처별 예상수량에 반영됩니다.</p>
+  <form method="post" action="/moves" class="row">
+    <label>이동일자 <input type="date" name="date" value="{{ today }}" required></label>
+    <label>품목코드 <input name="item_code" list="item-codes" class="wide" required></label>
+    <label>출발
+      <select name="from_location_id">{% for l in locations %}<option value="{{ l.id }}">{{ l.name }}</option>{% endfor %}</select>
+    </label>
+    <label>도착
+      <select name="to_location_id">{% for l in locations %}<option value="{{ l.id }}" {{ 'selected' if loop.index == 2 }}>{{ l.name }}</option>{% endfor %}</select>
+    </label>
+    <label>수량 <input type="number" name="qty" class="num" min="1" required></label>
+    <label>비고 <input name="note"></label>
+    <button>등록</button>
+  </form>
+</div>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>이동일자</th><th>품목코드</th><th>품목명</th><th class="r">수량</th><th>출발</th><th>도착</th><th>비고</th><th>등록</th><th></th></tr></thead>
+  <tbody>
+  {% for e in rows %}
+  <tr>
+    <td>{{ e.date }}</td><td>{{ e.item_code }}</td><td class="name">{{ e.item.name }}</td><td class="r">{{ e.qty|n }}</td>
+    <td>{{ e.from_location.name }}</td><td>{{ e.to_location.name }}</td><td>{{ e.note }}</td><td class="muted">{{ e.created_by }}</td>
+    <td>{% if not period.closed %}<form method="post" action="/moves/{{ e.id }}/delete" onsubmit="return confirm('삭제할까요?')"><button class="small danger">삭제</button></form>{% endif %}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="9" class="muted">이 기간의 이동 내역이 없습니다.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}
